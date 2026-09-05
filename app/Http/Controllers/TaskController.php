@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
@@ -15,9 +16,9 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        return TaskResource::collection(Task::query()->latest()->paginate(15));
+        return TaskResource::collection($request->user()->tasks()->latest()->paginate(15));
     }
 
     /**
@@ -25,7 +26,7 @@ class TaskController extends Controller
      */
     public function store(StoreTaskRequest $request): JsonResponse
     {
-        $task = Task::create($request->validated());
+        $task = $request->user()->tasks()->create($request->validated());
 
         return TaskResource::make($task)
             ->response()

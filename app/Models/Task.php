@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable(['title', 'description', 'status', 'priority', 'due_date'])]
 class Task extends Model
@@ -40,5 +41,25 @@ class Task extends Model
             'priority' => TaskPriority::class,
             'due_date' => 'date',
         ];
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Scope route-model binding to the authenticated user's own tasks, so a
+     * task belonging to another user resolves to null (and therefore 404s)
+     * instead of leaking its existence.
+     */
+    public function resolveRouteBinding($value, $field = null): ?Model
+    {
+        return $this->where($field ?? $this->getRouteKeyName(), $value)
+            ->where('user_id', request()->user()?->id)
+            ->first();
     }
 }
