@@ -1,3 +1,20 @@
+# Project Guidelines
+
+## Overview
+
+Laravel 13 API-only application (no `web.php`, only `routes/api.php` / `routes/console.php`). Auth via Laravel Sanctum. MySQL database (`tdd_ai_app_db`, with a separate `tdd_ai_app_db_test` used by the test suite via the `mysql_test` connection). Vite + Tailwind CSS 4 frontend build pipeline is scaffolded but no frontend code exists yet.
+
+## Database Conventions
+
+- **All tables use UUID primary keys**, not auto-incrementing integers. Migrations use `$table->uuid('id')->primary()`; models use Laravel's built-in `HasUuids` trait (ordered `Str::uuid7()` values). Foreign keys/polymorphic relations to these tables use `foreignUuid()` / `uuidMorphs()`.
+- `stubs/migration.create.stub` and `stubs/model.stub` are customized so `php artisan make:model X -m` scaffolds this automatically — no manual opt-in needed per table.
+- `users` and `personal_access_tokens` (Sanctum) are the reference implementation. See `.ai/rules/uuid-primary-keys.md` for the full rationale and details.
+
+## Development Workflow
+
+- Follow test-driven development for new features: write a failing test first (RED), implement the minimal change to pass it (GREEN), then refactor/format (`vendor/bin/pint --dirty --format agent`).
+- Tests use Pest against the `mysql_test` connection/`tdd_ai_app_db_test` database, with `RefreshDatabase` applied per test file as needed.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 
