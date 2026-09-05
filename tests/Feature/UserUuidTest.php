@@ -1,11 +1,8 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-
-uses(RefreshDatabase::class);
 
 it('creates a user with a uuid primary key', function () {
     $user = User::factory()->create();
