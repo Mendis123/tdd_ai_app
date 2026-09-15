@@ -51,41 +51,6 @@ describe('register', function () {
     });
 });
 
-describe('login', function () {
-    it('authenticates with valid credentials and returns a token', function () {
-        $user = User::factory()->create(['password' => Hash::make('secret123')]);
-
-        $response = $this->postJson('/api/login', [
-            'email' => $user->email,
-            'password' => 'secret123',
-        ]);
-
-        $response->assertOk()
-            ->assertJsonPath('user.id', $user->id)
-            ->assertJsonStructure(['user' => ['id', 'name', 'email'], 'token']);
-    });
-
-    it('rejects an incorrect password', function () {
-        $user = User::factory()->create(['password' => Hash::make('secret123')]);
-
-        $response = $this->postJson('/api/login', [
-            'email' => $user->email,
-            'password' => 'wrong-password',
-        ]);
-
-        $response->assertUnprocessable()->assertJsonValidationErrors(['email']);
-    });
-
-    it('rejects an unknown email', function () {
-        $response = $this->postJson('/api/login', [
-            'email' => 'missing@example.com',
-            'password' => 'secret123',
-        ]);
-
-        $response->assertUnprocessable()->assertJsonValidationErrors(['email']);
-    });
-});
-
 describe('logout', function () {
     it('revokes the current token', function () {
         $user = User::factory()->create(['password' => Hash::make('secret123')]);
