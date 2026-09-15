@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\NewAccessToken;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -31,6 +32,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Issue a personal access token for API authentication.
+     *
+     * The single place tokens are minted, so any future expiry or ability
+     * policy applies to every sign-in path at once.
+     */
+    public function issueApiToken(string $name = 'api'): NewAccessToken
+    {
+        return $this->createToken($name);
     }
 
     /**
