@@ -1,12 +1,11 @@
-import { useRef, useState, type FormEvent } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { BrandMark } from '../components/BrandMark.tsx'
 import { EyeIcon, EyeOffIcon } from '../components/icons.tsx'
 import { Alert } from '../components/ui/Alert.tsx'
 import { Button } from '../components/ui/Button.tsx'
 import { TextField } from '../components/ui/TextField.tsx'
 import { useAuth } from '../features/auth/useAuth.ts'
-import { toApiError } from '../lib/apiError.ts'
+import type { ApiError } from '../lib/apiError.ts'
 
 type FieldErrors = { email?: string; password?: string }
 
@@ -30,30 +29,60 @@ function validate(email: string, password: string): FieldErrors {
   return errors
 }
 
+/**
+ * The API reports a failed sign-in as a 422 on `email` with a message that
+ * deliberately does not say which half was wrong. Surfacing it under the email
+ * field alone would imply the email was the problem, so a rejected credential
+ * pair is shown as a form-level alert only.
+ */
+function toServerFieldErrors(signInError: ApiError | null): FieldErrors {
+  if (!signInError) {
+    return {}
+  }
+
+  const isCredentialFailure =
+    signInError.status === 422 &&
+    Boolean(signInError.fieldErrors.email) &&
+    !signInError.fieldErrors.password
+
+  if (isCredentialFailure) {
+    return {}
+  }
+
+  return { email: signInError.fieldErrors.email, password: signInError.fieldErrors.password }
+}
+
 export function SignInPage() {
-  const { signIn } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const { signIn, signInStatus, signInError, clearSignInError } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
-  const [formError, setFormError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [clientFieldErrors, setClientFieldErrors] = useState<FieldErrors>({})
 
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
 
-  /* Return the user to whatever they were denied, defaulting to the dashboard. */
-  const redirectTo = (location.state as { from?: string } | null)?.from ?? '/dashboard'
+  const isSubmitting = signInStatus === 'pending'
+  const serverFieldErrors = toServerFieldErrors(signInError)
+  const fieldErrors: FieldErrors = {
+    email: clientFieldErrors.email ?? serverFieldErrors.email,
+    password: clientFieldErrors.password ?? serverFieldErrors.password,
+  }
 
+  /* A failed attempt must not greet the user the next time they land here. */
+  useEffect(() => clearSignInError, [clearSignInError])
+
+  /*
+   * Success needs no handling here: the slice flips `status` to authenticated
+   * and `RedirectIfAuthenticated` sends the user on to where they were headed.
+   */
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const errors = validate(email, password)
-    setFieldErrors(errors)
-    setFormError(null)
+    setClientFieldErrors(errors)
+    clearSignInError()
 
     if (errors.email || errors.password) {
       const firstInvalidField = errors.email ? emailRef : passwordRef
@@ -62,30 +91,9 @@ export function SignInPage() {
       return
     }
 
-    setIsSubmitting(true)
+    const isSignedIn = await signIn({ email: email.trim(), password })
 
-    try {
-      await signIn({ email: email.trim(), password })
-      navigate(redirectTo, { replace: true })
-    } catch (error) {
-      const apiError = toApiError(error)
-
-      /*
-       * The API reports a failed sign-in as a 422 on `email` with a message that
-       * deliberately does not say which half was wrong. Surfacing it under the
-       * email field alone would imply the email was the problem, so a rejected
-       * credential pair is shown as a form-level alert with both fields marked.
-       */
-      const isCredentialFailure =
-        apiError.status === 422 && Boolean(apiError.fieldErrors.email) && !apiError.fieldErrors.password
-
-      setFormError(apiError.message)
-      setFieldErrors(
-        isCredentialFailure
-          ? {}
-          : { email: apiError.fieldErrors.email, password: apiError.fieldErrors.password },
-      )
-      setIsSubmitting(false)
+    if (!isSignedIn) {
       emailRef.current?.focus()
     }
   }
@@ -142,7 +150,7 @@ export function SignInPage() {
           </header>
 
           <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
-            {formError ? <Alert>{formError}</Alert> : null}
+            {signInError ? <Alert>{signInError.message}</Alert> : null}
 
             <TextField
               ref={emailRef}
