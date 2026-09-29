@@ -20,11 +20,23 @@ deliberately left unauthenticated (see [auth-signin.md](auth-signin.md)), so coo
   `email` with a message that deliberately does not reveal whether the email or the password was wrong. Rendering
   it under the email input would imply the email was at fault and partially undo the enumeration defence. The
   branch is explicit in `SignInPage`; do not "simplify" it into generic field-error mapping.
-- **`AuthProvider` is the only owner of session state.** It mirrors the token into `localStorage` (every access
-  wrapped in try/catch — storage throws in private-browsing modes) and revalidates a stored token with
-  `GET /api/user` on boot, holding routes in the `checking` status meanwhile. Sign-out clears locally even if
-  `POST /api/logout` fails.
+- **The Redux auth slice (`src/features/auth/authSlice.ts`) is the only owner of session state.** There is no
+  auth Context. Sign-in, boot revalidation and sign-out are `createAsyncThunk`s (`signIn`, `restoreSession`,
+  `signOut`); `signIn` drives `signInStatus` through `pending` → `fulfilled` | `rejected`. Thunks reject via
+  `rejectWithValue(toApiError(error))`, so `signInError` is already an `ApiError` — never put a raw Axios error in
+  the store (it is not serializable). Components read the session through `useAuth()`, which wraps the typed
+  `useAppSelector` / `useAppDispatch` from `src/app/hooks.ts`.
+- **Persistence is redux-persist, `user` and `token` only** (`whitelist` in `src/app/store.ts`, storage key
+  `tdd_ai_app:auth`). `status` always boots as `checking` and request state boots idle, so a stale pending/error is
+  never rehydrated. The `persistStore` callback dispatches `restoreSession` (`GET /api/user`), holding routes in
+  `checking` until the persisted token is proven live. Sign-out clears locally even if `POST /api/logout` fails.
+- **Import storage from `redux-persist/es/storage`, not `redux-persist/lib/storage`.** The `lib` entry is CommonJS;
+  Vite's dev pre-bundling hands back the module wrapper, so `storage.getItem is not a function` at boot and the app
+  never renders. `tsc` and `vite build` both pass with the broken import — only running the dev server shows it.
+- **Reducers stay pure; the token reaches Axios through a listener.** A `listenerMiddleware` predicate fires
+  whenever `state.auth.token` changes (sign-in, rehydration, sign-out, 401) and calls `setAuthToken()`. Do not call
+  `setAuthToken()` from thunks or components. The 401 handler (`onUnauthorized`) dispatches `sessionCleared`.
 - **Route protection is structural**: `RequireAuth` / `RedirectIfAuthenticated` wrap route subtrees in
-  `src/App.tsx` rather than each page checking for itself.
-- Context, hook, and provider live in separate files (`AuthContext.ts`, `useAuth.ts`, `AuthProvider.tsx`) because
-  `eslint-plugin-react-refresh` requires component files to export only components.
+  `src/App.tsx` rather than each page checking for itself. `RedirectIfAuthenticated` also *completes* a sign-in by
+  navigating to `location.state.from` (set by `RequireAuth`). `SignInPage` must not call `navigate()` itself:
+  react-redux store updates re-render synchronously, so the guard redirects before an awaited `navigate()` runs.
