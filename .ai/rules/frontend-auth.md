@@ -5,7 +5,7 @@ The SPA in `frontend/` is a standalone Vite/React app that talks to the Laravel 
 call, no `withCredentials`, and no stateful domain configuration. Keep it that way: the API's session guard is
 deliberately left unauthenticated (see [auth-signin.md](auth-signin.md)), so cookie auth would fight it.
 
-- **One Axios instance, `src/lib/apiClient.ts`.** Never call `axios` directly from a component or feature module.
+- **One Axios instance, `src/utils/api/apiClient.ts`.** Never call `axios` directly from a component or feature module.
   The token lives in a module variable set through `setAuthToken()`; a request interceptor attaches
   `Authorization: Bearer …`. `onUnauthorized()` registers the single handler that clears the session when the API
   returns 401, so a revoked token drops to `/signin` from wherever it was noticed.
@@ -14,7 +14,7 @@ deliberately left unauthenticated (see [auth-signin.md](auth-signin.md)), so coo
   `config/cors.php` to "fix" a failing request without first confirming CORS is actually the cause.
 - **Base URL comes from `VITE_API_BASE_URL`** (see `frontend/.env.example`) and *includes* the `/api` prefix, so
   call sites read `apiClient.post('/login', …)`. There is no Vite dev proxy.
-- **Errors are normalised once, in `src/lib/apiError.ts`.** Components consume `{message, fieldErrors, status}`
+- **Errors are normalised once, in `src/utils/api/apiError.ts`.** Components consume `{message, fieldErrors, status}`
   and never touch `error.response.data`. Laravel's `errors` bag is flattened to one message per field.
 - **A rejected sign-in is shown as a form-level alert, not an email field error.** The API reports it as a 422 on
   `email` with a message that deliberately does not reveal whether the email or the password was wrong. Rendering

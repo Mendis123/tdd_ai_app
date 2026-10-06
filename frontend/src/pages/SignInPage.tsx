@@ -1,33 +1,16 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type SubmitEvent } from 'react'
+import { EyeIcon, EyeOffIcon } from '../assets/svg/index.ts'
 import { BrandMark } from '../components/BrandMark.tsx'
-import { EyeIcon, EyeOffIcon } from '../components/icons.tsx'
 import { Alert } from '../components/ui/Alert.tsx'
 import { Button } from '../components/ui/Button.tsx'
 import { TextField } from '../components/ui/TextField.tsx'
 import { useAuth } from '../features/auth/useAuth.ts'
-import type { ApiError } from '../lib/apiError.ts'
-
-type FieldErrors = { email?: string; password?: string }
-
-/**
- * Mirrors the API's own rules so an obviously incomplete form never costs a
- * round trip. The server stays the authority: its 422 wins over anything here.
- */
-function validate(email: string, password: string): FieldErrors {
-  const errors: FieldErrors = {}
-
-  if (!email.trim()) {
-    errors.email = 'Email is required.'
-  } else if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
-    errors.email = 'Enter a valid email address.'
-  }
-
-  if (!password) {
-    errors.password = 'Password is required.'
-  }
-
-  return errors
-}
+import { APP_NAME } from '../utils/constants/app.ts'
+import { SIGN_IN_TEXT } from '../utils/constants/signIn.ts'
+import type { ApiError } from '../utils/types/api.ts'
+import type { SignInFieldErrors } from '../utils/types/signIn.ts'
+import { hasFieldErrors } from '../utils/validation/rules.ts'
+import { validateSignInCredentials } from '../utils/validation/validateSignInCredentials.ts'
 
 /**
  * The API reports a failed sign-in as a 422 on `email` with a message that
@@ -35,7 +18,7 @@ function validate(email: string, password: string): FieldErrors {
  * field alone would imply the email was the problem, so a rejected credential
  * pair is shown as a form-level alert only.
  */
-function toServerFieldErrors(signInError: ApiError | null): FieldErrors {
+function toServerFieldErrors(signInError: ApiError | null): SignInFieldErrors {
   if (!signInError) {
     return {}
   }
@@ -58,14 +41,14 @@ export function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
-  const [clientFieldErrors, setClientFieldErrors] = useState<FieldErrors>({})
+  const [clientFieldErrors, setClientFieldErrors] = useState<SignInFieldErrors>({})
 
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
 
   const isSubmitting = signInStatus === 'pending'
   const serverFieldErrors = toServerFieldErrors(signInError)
-  const fieldErrors: FieldErrors = {
+  const fieldErrors: SignInFieldErrors = {
     email: clientFieldErrors.email ?? serverFieldErrors.email,
     password: clientFieldErrors.password ?? serverFieldErrors.password,
   }
@@ -77,14 +60,14 @@ export function SignInPage() {
    * Success needs no handling here: the slice flips `status` to authenticated
    * and `RedirectIfAuthenticated` sends the user on to where they were headed.
    */
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const errors = validate(email, password)
+    const errors = validateSignInCredentials({ email, password })
     setClientFieldErrors(errors)
     clearSignInError()
 
-    if (errors.email || errors.password) {
+    if (hasFieldErrors(errors)) {
       const firstInvalidField = errors.email ? emailRef : passwordRef
       firstInvalidField.current?.focus()
 
@@ -113,20 +96,20 @@ export function SignInPage() {
 
         <div className="relative flex items-center gap-3">
           <BrandMark className="size-10 bg-white/15 shadow-none ring-1 ring-white/25" />
-          <span className="text-lg font-semibold tracking-tight text-white">Personal Tracker</span>
+          <span className="text-lg font-semibold tracking-tight text-white">{APP_NAME}</span>
         </div>
 
         <div className="relative max-w-md">
           <h2 className="text-4xl font-semibold leading-tight tracking-tight text-white text-balance">
-            Everything you meant to do, in one calm place.
+            {SIGN_IN_TEXT.brandHeadline}
           </h2>
           <p className="mt-4 text-base leading-relaxed text-brand-100">
-            Sign in to pick up your tasks exactly where you left them.
+            {SIGN_IN_TEXT.brandTagline}
           </p>
         </div>
 
         <p className="relative text-sm text-brand-200">
-          &copy; {new Date().getFullYear()} Personal Tracker
+          &copy; {new Date().getFullYear()} {APP_NAME}
         </p>
       </aside>
 
@@ -136,16 +119,16 @@ export function SignInPage() {
           <div className="flex items-center gap-3 lg:hidden">
             <BrandMark />
             <span className="text-lg font-semibold tracking-tight text-slate-900">
-              Personal Tracker
+              {APP_NAME}
             </span>
           </div>
 
           <header className="mt-8 lg:mt-0">
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Sign in to your account
+              {SIGN_IN_TEXT.heading}
             </h1>
             <p className="mt-2 text-sm text-slate-600">
-              Welcome back. Enter your details to continue.
+              {SIGN_IN_TEXT.subheading}
             </p>
           </header>
 
@@ -154,7 +137,7 @@ export function SignInPage() {
 
             <TextField
               ref={emailRef}
-              label="Email address"
+              label={SIGN_IN_TEXT.emailLabel}
               type="email"
               name="email"
               value={email}
@@ -164,27 +147,27 @@ export function SignInPage() {
               inputMode="email"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="you@example.com"
+              placeholder={SIGN_IN_TEXT.emailPlaceholder}
               autoFocus
               required
             />
 
             <TextField
               ref={passwordRef}
-              label="Password"
+              label={SIGN_IN_TEXT.passwordLabel}
               type={isPasswordVisible ? 'text' : 'password'}
               name="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               error={fieldErrors.password}
               autoComplete="current-password"
-              placeholder="••••••••"
+              placeholder={SIGN_IN_TEXT.passwordPlaceholder}
               required
               trailing={
                 <button
                   type="button"
                   onClick={() => setIsPasswordVisible((visible) => !visible)}
-                  aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
+                  aria-label={isPasswordVisible ? SIGN_IN_TEXT.hidePassword : SIGN_IN_TEXT.showPassword}
                   aria-pressed={isPasswordVisible}
                   className="grid size-8 place-items-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
                 >
@@ -198,7 +181,7 @@ export function SignInPage() {
             />
 
             <Button type="submit" isLoading={isSubmitting} className="w-full">
-              {isSubmitting ? 'Signing in…' : 'Sign in'}
+              {isSubmitting ? SIGN_IN_TEXT.submitting : SIGN_IN_TEXT.submit}
             </Button>
           </form>
         </div>

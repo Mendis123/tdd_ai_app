@@ -12,7 +12,7 @@ import {
 } from 'redux-persist'
 import storage from 'redux-persist/es/storage'
 import { authSlice, restoreSession, sessionCleared, type AuthState } from '../features/auth/authSlice.ts'
-import { onUnauthorized, setAuthToken } from '../lib/apiClient.ts'
+import { onUnauthorized, setAuthToken } from '../utils/api/apiClient.ts'
 
 /*
  * Only the session itself survives a reload. `status` always boots as

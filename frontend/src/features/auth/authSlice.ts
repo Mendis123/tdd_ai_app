@@ -1,8 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { RootState } from '../../app/store.ts'
-import { toApiError, type ApiError } from '../../lib/apiError.ts'
-import * as authApi from './authApi.ts'
-import type { AuthenticatedUser, SignInCredentials } from './types.ts'
+import { toApiError } from '../../utils/api/apiError.ts'
+import * as authApi from '../../utils/api/authApi.ts'
+import type { ApiError } from '../../utils/types/api.ts'
+import type { AuthenticatedUser, SignInCredentials } from '../../utils/types/auth.ts'
 
 /**
  * `checking` covers the boot-time round trip that validates a persisted token,

@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router'
 import { BrandMark } from '../components/BrandMark.tsx'
-import { CloseIcon, HomeIcon } from '../components/icons.tsx'
+import { CloseIcon, HomeIcon } from '../assets/svg/index.ts'
+import { APP_NAME } from '../utils/constants/app.ts'
 
 const NAVIGATION = [{ label: 'Dashboard', to: '/dashboard', icon: HomeIcon }]
 
@@ -32,7 +33,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="flex items-center gap-2.5">
             <BrandMark className="size-8" />
             <span className="text-base font-semibold tracking-tight text-slate-900">
-              Personal Tracker
+              {APP_NAME}
             </span>
           </div>
 

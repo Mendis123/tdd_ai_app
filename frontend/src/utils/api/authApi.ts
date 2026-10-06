@@ -1,5 +1,5 @@
-import { apiClient } from '../../lib/apiClient.ts'
-import type { AuthenticatedUser, SignInCredentials, SignInResponse } from './types.ts'
+import { apiClient } from './apiClient.ts'
+import type { AuthenticatedUser, SignInCredentials, SignInResponse } from '../types/auth.ts'
 
 /**
  * Exchanges credentials for a Sanctum personal access token.

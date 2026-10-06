@@ -7,7 +7,7 @@ import {
   signOut,
   type AuthState,
 } from './authSlice.ts'
-import type { SignInCredentials } from './types.ts'
+import type { SignInCredentials } from '../../utils/types/auth.ts'
 
 export type UseAuthValue = AuthState & {
   /** Resolves `true` once the token is stored; a rejection lands in `signInError`. */
