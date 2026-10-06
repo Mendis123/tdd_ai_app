@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDownIcon, SignOutIcon } from '../components/icons.tsx'
+import { ChevronDownIcon, SignOutIcon } from '../assets/svg/index.ts'
 import { Spinner } from '../components/ui/Spinner.tsx'
 import { useAuth } from '../features/auth/useAuth.ts'
 

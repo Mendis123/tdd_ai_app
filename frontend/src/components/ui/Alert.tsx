@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { AlertIcon } from '../icons.tsx'
+import { AlertIcon } from '../../assets/svg/index.ts'
 
 /**
  * Assertive status message for a failed action.
