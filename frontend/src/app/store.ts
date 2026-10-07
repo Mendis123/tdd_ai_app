@@ -13,6 +13,7 @@ import {
 import storage from 'redux-persist/es/storage'
 import { authSlice, sessionCleared } from '../features/auth/authSlice.ts'
 import { restoreSession } from '../features/auth/authThunks.ts'
+import { tasksSlice } from '../features/tasks/tasksSlice.ts'
 import { onUnauthorized, setAuthToken } from '../utils/api/apiClient.ts'
 import type { AuthState } from '../utils/types/auth.ts'
 
@@ -31,6 +32,7 @@ const authPersistConfig: PersistConfig<AuthState> = {
 
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authSlice.reducer),
+  tasks: tasksSlice.reducer,
 })
 
 export type RootState = ReturnType<typeof rootReducer>

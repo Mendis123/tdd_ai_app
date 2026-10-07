@@ -6,3 +6,4 @@
 | `app/Models/Task.php`, `app/Http/Controllers/TaskController.php`, `routes/api.php` | [task-ownership.md](task-ownership.md) |
 | `app/Http/Controllers/Auth/**`, `app/Http/Requests/Auth/**`, `app/Models/User.php`, `routes/api.php` | [auth-signin.md](auth-signin.md) |
 | `frontend/src/**` | [frontend-auth.md](frontend-auth.md) |
+| `frontend/src/features/tasks/**`, `frontend/src/components/tasks/**`, `frontend/src/components/ui/**`, `frontend/src/pages/Task*`, `frontend/src/utils/**/task*`, `frontend/src/utils/constants/navigation.ts` | [frontend-tasks.md](frontend-tasks.md) |

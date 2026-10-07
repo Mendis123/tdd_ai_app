@@ -1,9 +1,8 @@
 import { NavLink } from 'react-router'
 import { BrandMark } from '../components/BrandMark.tsx'
-import { CloseIcon, HomeIcon } from '../assets/svg/index.ts'
+import { CloseIcon } from '../assets/svg/index.ts'
 import { APP_NAME } from '../utils/constants/app.ts'
-
-const NAVIGATION = [{ label: 'Dashboard', to: '/dashboard', icon: HomeIcon }]
+import { NAVIGATION } from '../utils/constants/navigation.ts'
 
 type SidebarProps = {
   /** Drawer state; below `lg` the sidebar is off-canvas. */
@@ -47,33 +46,50 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </button>
         </div>
 
-        <nav aria-label="Main" className="flex-1 overflow-y-auto px-3 py-4">
-          <ul className="space-y-1">
-            {NAVIGATION.map(({ label, to, icon: NavIcon }) => (
-              <li key={to}>
-                <NavLink
-                  to={to}
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
-                      isActive
-                        ? 'bg-brand-50 text-brand-700'
-                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <NavIcon
-                        className={`size-5 shrink-0 ${isActive ? 'text-brand-600' : 'text-slate-400'}`}
-                      />
-                      {label}
-                    </>
-                  )}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+        <nav aria-label="Main" className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
+          {NAVIGATION.map((section, sectionIndex) => {
+            const headingId = `sidebar-section-${sectionIndex}`
+
+            return (
+              <div key={section.heading ?? sectionIndex}>
+                {section.heading ? (
+                  <h2
+                    id={headingId}
+                    className="mb-2 px-3 text-xs font-semibold tracking-wider text-slate-400 uppercase"
+                  >
+                    {section.heading}
+                  </h2>
+                ) : null}
+
+                <ul aria-labelledby={section.heading ? headingId : undefined} className="space-y-1">
+                  {section.items.map(({ label, to, icon: NavIcon }) => (
+                    <li key={to}>
+                      <NavLink
+                        to={to}
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
+                            isActive
+                              ? 'bg-brand-50 text-brand-700'
+                              : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                          }`
+                        }
+                      >
+                        {({ isActive }) => (
+                          <>
+                            <NavIcon
+                              className={`size-5 shrink-0 ${isActive ? 'text-brand-600' : 'text-slate-400'}`}
+                            />
+                            {label}
+                          </>
+                        )}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          })}
         </nav>
       </aside>
     </>

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { DashboardLayout } from './layouts/DashboardLayout.tsx'
 import { DashboardPage } from './pages/DashboardPage.tsx'
 import { SignInPage } from './pages/SignInPage.tsx'
+import { TaskCreatePage } from './pages/TaskCreatePage.tsx'
 import { RedirectIfAuthenticated } from './routes/RedirectIfAuthenticated.tsx'
 import { RequireAuth } from './routes/RequireAuth.tsx'
 
@@ -15,6 +16,7 @@ const App = () => {
       <Route element={<RequireAuth />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/tasks/create" element={<TaskCreatePage />} />
         </Route>
       </Route>
 
