@@ -1,4 +1,4 @@
-import type { ApiError } from './api.ts'
+import type { ApiError, RequestStatus } from './api.ts'
 
 /** Shape returned by `UserResource` on the API. */
 export type AuthenticatedUser = {
@@ -26,7 +26,7 @@ export type SignInResponse = {
 export type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated'
 
 /** Lifecycle of the most recent `POST /api/login` request. */
-export type SignInStatus = 'idle' | 'pending' | 'fulfilled' | 'rejected'
+export type SignInStatus = RequestStatus
 
 export type AuthState = {
   user: AuthenticatedUser | null

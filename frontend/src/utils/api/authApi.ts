@@ -1,4 +1,5 @@
 import { apiClient } from './apiClient.ts'
+import type { ApiResource } from '../types/api.ts'
 import type { AuthenticatedUser, SignInCredentials, SignInResponse } from '../types/auth.ts'
 
 /**
@@ -16,7 +17,7 @@ export async function signIn(credentials: SignInCredentials): Promise<SignInResp
 
 /** `GET /api/user` returns a bare `UserResource`, so the payload is `data`-wrapped. */
 export async function fetchAuthenticatedUser(): Promise<AuthenticatedUser> {
-  const { data } = await apiClient.get<{ data: AuthenticatedUser }>('/user')
+  const { data } = await apiClient.get<ApiResource<AuthenticatedUser>>('/user')
 
   return data.data
 }

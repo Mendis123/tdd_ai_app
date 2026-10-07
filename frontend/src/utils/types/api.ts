@@ -10,6 +10,14 @@ export type ApiError = {
   status: number | null
 }
 
+/** A single Laravel `JsonResource`, which wraps its payload in `data`. */
+export type ApiResource<T> = {
+  data: T
+}
+
+/** Lifecycle of a single request tracked in a slice. */
+export type RequestStatus = 'idle' | 'pending' | 'fulfilled' | 'rejected'
+
 /** Laravel's error envelope, as returned for validation and HTTP exceptions. */
 export type LaravelErrorBody = {
   message?: string
