@@ -1,13 +1,15 @@
 import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks.ts'
 import {
-  selectAuth,
-  signIn,
-  signInErrorCleared,
-  signOut,
-  type AuthState,
-} from './authSlice.ts'
-import type { SignInCredentials } from '../../utils/types/auth.ts'
+  selectAuthStatus,
+  selectAuthToken,
+  selectCurrentUser,
+  selectSignInError,
+  selectSignInStatus,
+} from './authSelectors.ts'
+import { signInErrorCleared } from './authSlice.ts'
+import { signIn, signOut } from './authThunks.ts'
+import type { AuthState, SignInCredentials } from '../../utils/types/auth.ts'
 
 export type UseAuthValue = AuthState & {
   /** Resolves `true` once the token is stored; a rejection lands in `signInError`. */
@@ -18,7 +20,11 @@ export type UseAuthValue = AuthState & {
 
 /** The session as components see it: slice state plus bound thunks. */
 export function useAuth(): UseAuthValue {
-  const auth = useAppSelector(selectAuth)
+  const user = useAppSelector(selectCurrentUser)
+  const token = useAppSelector(selectAuthToken)
+  const status = useAppSelector(selectAuthStatus)
+  const signInStatus = useAppSelector(selectSignInStatus)
+  const signInError = useAppSelector(selectSignInError)
   const dispatch = useAppDispatch()
 
   const handleSignIn = useCallback(
@@ -38,5 +44,14 @@ export function useAuth(): UseAuthValue {
     dispatch(signInErrorCleared())
   }, [dispatch])
 
-  return { ...auth, signIn: handleSignIn, signOut: handleSignOut, clearSignInError }
+  return {
+    user,
+    token,
+    status,
+    signInStatus,
+    signInError,
+    signIn: handleSignIn,
+    signOut: handleSignOut,
+    clearSignInError,
+  }
 }

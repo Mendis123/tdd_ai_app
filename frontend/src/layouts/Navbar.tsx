@@ -1,4 +1,4 @@
-import { MenuIcon } from '../assets/svg/index.ts'
+import { MenuIcon } from '../assets/svg'
 import { UserMenu } from './UserMenu.tsx'
 
 export function Navbar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
