@@ -26,6 +26,12 @@ deliberately left unauthenticated (see [auth-signin.md](auth-signin.md)), so coo
   `rejectWithValue(toApiError(error))`, so `signInError` is already an `ApiError` — never put a raw Axios error in
   the store (it is not serializable). Components read the session through `useAuth()`, which wraps the typed
   `useAppSelector` / `useAppDispatch` from `src/app/hooks.ts`.
+- **The auth feature is split by role, and Redux code stays in `src/features/auth/`.** `authSlice.ts` holds
+  state and reducers only; the thunks live in `authThunks.ts` and the per-field selectors (`selectCurrentUser`,
+  `selectAuthStatus`, `selectIsAuthenticated`, …) in `authSelectors.ts`. State types (`AuthState`, `AuthStatus`,
+  `SignInStatus`) live in `src/utils/types/auth.ts`. Do not move thunks or selectors into `src/utils/`: they
+  depend on `RootState`, and `src/utils/api/` must stay a Redux-free transport layer (raw HTTP calls belong in
+  `authApi.ts`, which the thunks call).
 - **Persistence is redux-persist, `user` and `token` only** (`whitelist` in `src/app/store.ts`, storage key
   `tdd_ai_app:auth`). `status` always boots as `checking` and request state boots idle, so a stale pending/error is
   never rehydrated. The `persistStore` callback dispatches `restoreSession` (`GET /api/user`), holding routes in
