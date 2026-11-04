@@ -1,4 +1,4 @@
-import { HomeIcon, PlusIcon } from '../../assets/svg/index.ts'
+import { HomeIcon, ListIcon, PlusIcon } from '../../assets/svg/index.ts'
 import type { NavigationSection } from '../types/navigation.ts'
 
 /** The sidebar, top to bottom. */
@@ -8,6 +8,9 @@ export const NAVIGATION: NavigationSection[] = [
   },
   {
     heading: 'Task management',
-    items: [{ label: 'Create task', to: '/tasks/create', icon: PlusIcon }],
+    items: [
+      { label: 'All tasks', to: '/tasks', icon: ListIcon },
+      { label: 'Create task', to: '/tasks/create', icon: PlusIcon },
+    ],
   },
 ]

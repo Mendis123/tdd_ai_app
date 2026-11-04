@@ -1,5 +1,5 @@
 import type { TASK_PRIORITY_OPTIONS, TASK_STATUS_OPTIONS } from '../constants/task.ts'
-import type { ApiError, RequestStatus } from './api.ts'
+import type { ApiError, PaginationMeta, RequestStatus } from './api.ts'
 
 export type TaskStatus = (typeof TASK_STATUS_OPTIONS)[number]['value']
 
@@ -46,6 +46,14 @@ export type TaskFormValues = {
 export type TaskFieldErrors = Partial<Record<keyof TaskFormValues, string>>
 
 export type TasksState = {
+  /** The page of tasks the list screen is showing. */
+  tasks: Task[]
+  /** Pagination for `tasks`; `null` until the first page has loaded. */
+  listMeta: PaginationMeta | null
+  listStatus: RequestStatus
+  listError: ApiError | null
+  /** The in-flight fetch, so a slower response for a page the user has left is ignored. */
+  listRequestId: string | null
   createStatus: RequestStatus
   /** Already normalized by `toApiError()`, so it is serializable and UI-ready. */
   createError: ApiError | null

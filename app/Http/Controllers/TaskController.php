@@ -18,7 +18,7 @@ class TaskController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        return TaskResource::collection($request->user()->tasks()->latest()->paginate(15));
+        return TaskResource::collection($request->user()->tasks()->latest()->paginate(10));
     }
 
     /**

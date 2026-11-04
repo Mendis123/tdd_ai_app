@@ -19,6 +19,16 @@ Add list/show/edit/delete into the same files rather than inventing a new layout
   reject value. The slice tracks the in-flight `requestId` so a response landing after `createTaskReset` (screen
   unmounted) is ignored, and it resets on `sessionCleared` / `signOut.fulfilled` so task state never outlives the
   user who loaded it. Task state is not persisted.
+- **The task list (`TaskListPage`, `/tasks`) is paginated by the API, 10 per page** (`TaskController::index`,
+  pinned by a test). Never page or slice on the client. `fetchTasks(page)` returns `PaginatedResource<T>` (`data` +
+  Laravel's `meta`; `links` is dropped). The page number lives in the URL (`?page=`), not in Redux; a page past
+  `meta.last_page` redirects to the last page. `useTaskList(page)` fetches on change and dispatches `taskListReset`
+  on unmount. Rows stay visible (dimmed) while the next page loads, guarded by `listRequestId`.
+- **Status/priority labels come from `toTaskStatusLabel` / `toTaskPriorityLabel`** (lookups on the same options
+  lists), and `due_date` is shown via `formatDueDate`, which parses `YYYY-MM-DD` as a *local* date (`new Date('…')`
+  would be UTC midnight and show the previous day west of Greenwich).
+- **Link-styled buttons use `buttonClassName()`** from `src/components/ui/buttonStyles.ts`; it lives outside
+  `Button.tsx` because react-refresh lint rejects non-component exports from component files.
 - **Sidebar entries are data** in `src/utils/constants/navigation.ts` (`NavigationSection[]`); add task links to
   the "Task management" section there, not in `Sidebar.tsx`.
 - **Form controls share `FormField` + `fieldControlClassName`** (`src/components/ui/`). New controls should wrap
