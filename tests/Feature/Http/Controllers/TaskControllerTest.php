@@ -30,6 +30,32 @@ describe('index', function () {
             ]);
     });
 
+    it('paginates tasks ten per page', function () {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user, ['*']);
+        Task::factory()->for($user)->count(11)->create();
+
+        $response = $this->getJson('/api/tasks');
+
+        $response->assertOk()
+            ->assertJsonCount(10, 'data')
+            ->assertJsonPath('meta.per_page', 10)
+            ->assertJsonPath('meta.total', 11)
+            ->assertJsonPath('meta.last_page', 2);
+    });
+
+    it('returns the remaining tasks on the next page', function () {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user, ['*']);
+        Task::factory()->for($user)->count(11)->create();
+
+        $response = $this->getJson('/api/tasks?page=2');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('meta.current_page', 2);
+    });
+
     it('returns an empty list when no tasks exist', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user, ['*']);

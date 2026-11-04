@@ -51,6 +51,34 @@ export const TASK_FORM_TEXT = {
   cancel: 'Cancel',
 } as const
 
+/** Task list column headings, in on-screen order. */
+export const TASK_TABLE_COLUMNS = [
+  'Title',
+  'Description',
+  'Status',
+  'Priority',
+  'Due date',
+  'Actions',
+] as const
+
+/** Copy for the task list screen. */
+export const TASK_LIST_TEXT = {
+  heading: 'Tasks',
+  subheading: 'Everything on your list, newest first.',
+  createTask: 'Create task',
+  tableCaption: 'Your tasks',
+  loading: 'Loading tasks',
+  retry: 'Try again',
+  emptyHeading: 'No tasks yet',
+  emptyBody: 'Create your first task to start tracking your work.',
+  /** Shown in place of an unset description or due date. */
+  noValue: '—',
+  edit: 'Edit',
+  delete: 'Delete',
+  editLabel: (title: string) => `Edit “${title}”`,
+  deleteLabel: (title: string) => `Delete “${title}”`,
+} as const
+
 /** Copy for the create-task screen. */
 export const TASK_CREATE_TEXT = {
   heading: 'Create task',

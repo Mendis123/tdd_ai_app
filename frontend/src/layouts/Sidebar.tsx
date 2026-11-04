@@ -66,6 +66,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <li key={to}>
                       <NavLink
                         to={to}
+                        /* Exact match: "All tasks" (/tasks) must not light up on /tasks/create. */
+                        end
                         onClick={onClose}
                         className={({ isActive }) =>
                           `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
